@@ -8,7 +8,7 @@ class APIRequest {
 
   static Future<List<Currency>> getCurrencyList() async {
     var responce = await http.get(
-        'https://min-api.cryptocompare.com/data/top/totalvolfull?limit=100&tsym=USD');
+        Uri.parse('https://min-api.cryptocompare.com/data/top/totalvolfull?limit=100&tsym=USD'));
     List<Currency> list = [];
     var bodyDecoded = jsonDecode(responce.body);
     for (var cur in bodyDecoded['Data']) {

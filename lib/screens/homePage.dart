@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
               itemBuilder: (context, index) {
                 return ListTile(
                   title: Text(snapshot.data[index].name),
-                  trailing: Text('\$ ' + snapshot.data[index].price.toString()),
+                  trailing: Text('\$ ' + snapshot.data[index].price.toStringAsFixed(4)),
                   leading: CircleAvatar(
                     backgroundColor: Colors.white,
                     child: Image.network('https://www.cryptocompare.com/' +
@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                   },
                 );
               },
-              itemCount: snapshot.data.length,
+              itemCount: 100,
             );
           } else {
             return const Center(
