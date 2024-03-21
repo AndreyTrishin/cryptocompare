@@ -1,9 +1,12 @@
 import 'package:first_flutter_project/APIRequests.dart';
+import 'package:first_flutter_project/blocs/cryptolist_bloc/CryptoListBloc.dart';
 import 'package:first_flutter_project/models/currency.dart';
 import 'package:first_flutter_project/screens/currencyPage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'SettingsPage.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -15,9 +18,13 @@ class HomePage extends StatefulWidget {
 List<Currency> list = <Currency>[];
 
 class _HomePageState extends State<HomePage> {
+
+
+
+  final _cryptoListBloc = CryptoListBloc();
+
   @override
   Widget build(BuildContext context) {
-    var list = APIRequest.getCurrencyList();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
@@ -26,49 +33,48 @@ class _HomePageState extends State<HomePage> {
           IconButton(
               onPressed: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SettingsPage()));
+                    MaterialPageRoute(builder: (context) => SettingsPage(_cryptoListBloc)));
               },
               icon: Icon(Icons.settings))
         ],
       ),
-      body: FutureBuilder(
-        future: list,
-        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.green,
-              ),
-            );
-          } else if (snapshot.connectionState == ConnectionState.done) {
+      body: BlocBuilder(
+        bloc: _cryptoListBloc,
+        builder: (context, state) {
+          if(state is CryptoListLoaded) {
             return ListView.builder(
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(snapshot.data[index].name),
-                  trailing: Text('\$ ' + snapshot.data[index].price.toStringAsFixed(4)),
+                  title: Text(state.list[index].name),
+                  trailing: Text('\$ ' + state.list[index].price.toStringAsFixed(4)),
                   leading: CircleAvatar(
                     backgroundColor: Colors.white,
                     child: Image.network('https://www.cryptocompare.com/' +
-                        snapshot.data[index].imageUrl),
+                        state.list[index].imageUrl),
                   ),
                   onTap: () {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                CurrencyPage(snapshot.data[index])));
+                                CurrencyPage(state.list[index])));
                   },
                 );
               },
               itemCount: 100,
             );
-          } else {
-            return const Center(
-              child: Text('Ошибка'),
-            );
+          } else if (state is CryptoListLoading) {
+            return Center(child: CircularProgressIndicator(),);
           }
+          return Center(child: Text('Ошибка'),);
         },
       ),
     );
+  }
+
+  @override
+  void initState() {
+    _cryptoListBloc.add(CryptoListLoad());
+    super.initState();
   }
 }

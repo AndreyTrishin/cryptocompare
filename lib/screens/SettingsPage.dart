@@ -1,14 +1,22 @@
+import 'package:first_flutter_project/blocs/cryptolist_bloc/CryptoListBloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
+  CryptoListBloc _cryptoListBloc = CryptoListBloc();
+
+  SettingsPage(this._cryptoListBloc);
+
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  State<SettingsPage> createState() => _SettingsPageState(_cryptoListBloc);
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  String currentCurr = 'USD';
+  CryptoListBloc _cryptoListBloc = CryptoListBloc();
+
+  _SettingsPageState(this._cryptoListBloc);
+
   List<List<String>> list = [
     ['Рубли', 'RUB'],
     ['Доллары', 'USD'],
@@ -18,11 +26,6 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    _prefs.then((SharedPreferences prefs) {
-      setState(() {
-        currentCurr = prefs.getString('currentCurrency') ?? 'USD';
-      });
-    });
   }
 
   @override
@@ -36,7 +39,8 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           ListTile(
             title: Text('Валюта'),
-            subtitle: Text(currentCurr),
+            subtitle: Text(
+                (_cryptoListBloc.state as CryptoListLoaded).currentCurrency),
             onTap: () {
               showDialog(
                   context: context,
@@ -46,20 +50,17 @@ class _SettingsPageState extends State<SettingsPage> {
                                   title: Text(list[index][0]),
                                   subtitle: Text(list[index][1]),
                                   trailing: Icon(
-                                    currentCurr != list[index][1]
+                                    (_cryptoListBloc.state as CryptoListLoaded)
+                                                .currentCurrency !=
+                                            list[index][1]
                                         ? Icons.radio_button_off
                                         : Icons.radio_button_checked,
                                     color: Colors.black,
                                   ),
                                   onTap: () {
-                                    _prefs.then((value) {
-                                      value.setString(
-                                          'currentCurrency', list[index][1]);
-                                      setState(() {
-                                        currentCurr = list[index][1];
-                                      });
-                                      Navigator.pop(context);
-                                    });
+                                    _cryptoListBloc.add(CryptoListLoad(
+                                        currency: list[index][1]));
+                                    Navigator.pop(context);
                                   },
                                 ),
                             separatorBuilder: (context, index) => Divider(),

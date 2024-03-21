@@ -6,9 +6,9 @@ import 'package:http/http.dart' as http;
 class APIRequest {
   static String server = "";
 
-  static Future<List<Currency>> getCurrencyList() async {
+  static Future<List<Currency>> getCurrencyList(currency) async {
     var responce = await http.get(
-        Uri.parse('https://min-api.cryptocompare.com/data/top/totalvolfull?limit=100&tsym=USD'));
+        Uri.parse('https://min-api.cryptocompare.com/data/top/totalvolfull?limit=100&tsym='+currency));
     List<Currency> list = [];
     var bodyDecoded = jsonDecode(responce.body);
     for (var cur in bodyDecoded['Data']) {
@@ -22,7 +22,6 @@ class APIRequest {
             cur['CoinInfo']['Url']));
       } catch (ex) {
         print(ex);
-        print(cur);
       }
     }
     return list;
